@@ -1,8 +1,9 @@
 package l
 
 import i.encodeUrl
+import java.io.OutputStream
 import java.io.PrintWriter
-import javax.net.SocketFactory
+import javax.net.ssl.SSLSocketFactory
 
 fun main() {
 //    SocketFactory.getDefault().createSocket("localhost", 8080).use { socket ->
@@ -21,12 +22,12 @@ fun main() {
 //        }
 //    }
 
-    SocketFactory.getDefault().createSocket("localhost", 8080).use { socket ->
-        socket.getOutputStream().bufferedWriter().use { originalRequestWriter ->
-            PrintWriter(originalRequestWriter).apply {
+    SSLSocketFactory.getDefault().createSocket("api.mrgrd56.ru", 443).use { socket ->
+        MultiOutputStream(socket.getOutputStream().buffered(), System.out).use { originalRequestStream ->
+            PrintWriter(originalRequestStream).apply {
 //                println("GET /proxy?url=${"https://st.mrgrd56.ru/util/lorem.txt".encodeUrl()} HTTP/1.1")
-                println("GET /proxy?url=${"http://localhost:8080/proxy?url=http://localhost:8080/mock/ro?page=50".encodeUrl()} HTTP/1.1")
-                println("Host: localhost")
+                println("GET /proxy?url=${"http://localhost:8080/mock/ro?size=1".encodeUrl()} HTTP/1.1")
+                println("Host: api.mrgrd56.ru")
                 println("Connection: close")
 //                println("Referer: mrgrd56.ru")
 //                println("Origin: mrgrd56.ru")
@@ -56,4 +57,26 @@ fun main() {
 //            }
 //        }
 //    }
+}
+
+class MultiOutputStream(private vararg val outputStreams: OutputStream) : OutputStream() {
+    override fun write(b: Int) {
+        outputStreams.forEach { it.write(b) }
+    }
+
+    override fun write(b: ByteArray) {
+        outputStreams.forEach { it.write(b) }
+    }
+
+    override fun write(b: ByteArray, off: Int, len: Int) {
+        outputStreams.forEach { it.write(b, off, len) }
+    }
+
+    override fun flush() {
+        outputStreams.forEach { it.flush() }
+    }
+
+    override fun close() {
+        outputStreams.forEach { it.close() }
+    }
 }
