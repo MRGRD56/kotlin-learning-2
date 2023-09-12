@@ -21,14 +21,24 @@ fun main() {
     val peopleByGender = people.asSequence()
         .filterNotNull()
         .filterNot { it.name.isEmpty() || it.age < 0 }
-        .groupingBy { it.gender }
-        .fold(0.0 to 0.0) { (sum, count), person ->
-            sum + person.age to count + 1
-        }
+        .groupBy { it.gender }
         .mapValues { (_, value) ->
-            if (value.second == 0.0) 0.0
-            else value.first / value.second
+            value.asSequence()
+                .map { it.age.toDouble() }
+                .average()
         }
+
+//    val peopleByGender = people.asSequence()
+//        .filterNotNull()
+//        .filterNot { it.name.isEmpty() || it.age < 0 }
+//        .groupingBy { it.gender }
+//        .fold(0.0 to 0.0) { (sum, count), person ->
+//            sum + person.age to count + 1
+//        }
+//        .mapValues { (_, value) ->
+//            if (value.second == 0.0) 0.0
+//            else value.first / value.second
+//        }
 //        .mapValuesTo(TreeMap()) { (_, value) ->
 //            value.groupBy { it.age }
 //        }
